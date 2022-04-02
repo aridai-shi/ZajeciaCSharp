@@ -73,6 +73,7 @@ namespace Zadanie1
                 using (StringReader reader = new StringReader(text))
                 {
                     string line = reader.ReadLine();
+                    if (line!=null && line != "")
                     people.Add(new Person(line));
                 }
             }
