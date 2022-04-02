@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Zadanie1
@@ -8,9 +10,11 @@ namespace Zadanie1
     {
         public static string file;
         public static string menuOpts = "123456";
+        public static Person[] allPeople = new Person[0];
         static void Main(string[] args)
         {
             file = Directory.GetCurrentDirectory() + "\\ksiazka_telefoniczna.txt";
+            wczytajOsoby();
             while (true)
             { // tu będzie tylko menu, reszta to funkcje;
                 Console.Clear();
@@ -54,6 +58,29 @@ namespace Zadanie1
             }
         }
 
+        private static void wczytajOsoby()
+        {
+            List<Person> people = allPeople.ToList();
+            if (!File.Exists(file))
+            {
+                var myFile = File.Create(file);
+                myFile.Close();
+            }
+            StreamReader sr = new StreamReader(file);
+            string text = sr.ReadToEnd();
+            if (text != null)
+            {
+                using (StringReader reader = new StringReader(text))
+                {
+                    string line = reader.ReadLine();
+                    people.Add(new Person(line));
+                }
+            }
+            allPeople = people.ToArray();
+            sr.Dispose();
+            sr.Close();
+        }
+
         static void czysczeniePamieci()
         {
             Console.WriteLine("Czy chcesz wyczyścić pamięć aplikacji? [T/N]");
@@ -78,6 +105,8 @@ namespace Zadanie1
             File.Delete(file);
             var myFile = File.Create(file);
             myFile.Close();
+            allPeople = new Person[0];
+            wczytajOsoby();
             Console.WriteLine("Wyczyszczono pamięć!");
         }
 
@@ -91,44 +120,21 @@ namespace Zadanie1
             }
             else
             {
-                if (!File.Exists(file))
+                foreach (Person person in allPeople)
                 {
-                    var myFile = File.Create(file);
-                    myFile.Close();
-                }
-                StreamReader sr = new StreamReader(file);
-                string text = sr.ReadToEnd();
-                if (text != null)
-                {
-                    using (StringReader reader = new StringReader(text))
+                    if (person.id == num)
                     {
-                        string line = reader.ReadLine();
-                        string[] rozbite = line.Split(" ");
-                        if (num.ToString()+"."== rozbite[0])
-                        {
-                            Console.WriteLine(line);
-                        }
+                        Console.WriteLine(person.ToString());
                     }
                 }
-                sr.Dispose();
-                sr.Close();
             }
         }
         static void wyswietlWszystkie()
         {
-            if (!File.Exists(file))
+            foreach (Person person in allPeople)
             {
-                var myFile = File.Create(file);
-                myFile.Close();
+                Console.WriteLine(person.ToString());
             }
-            StreamReader sr = new StreamReader(file);
-            string text = sr.ReadToEnd();
-            if (text != null)
-            {
-                Console.WriteLine(text);
-            }
-            sr.Dispose();
-            sr.Close();
         }
         static void wyswietlZImienia(string imie = "")
         {
@@ -140,27 +146,13 @@ namespace Zadanie1
             }
             else
             {
-                if (!File.Exists(file))
+                foreach (Person person in allPeople)
                 {
-                    var myFile = File.Create(file);
-                    myFile.Close();
-                }
-                StreamReader sr = new StreamReader(file);
-                string text = sr.ReadToEnd();
-                if (text != null)
-                {
-                    using (StringReader reader = new StringReader(text))
+                    if (person.imie == imie)
                     {
-                        string line = reader.ReadLine();
-                        string[] rozbite = line.Split(" ");
-                        if (rozbite[1] == imie)
-                        {
-                            Console.WriteLine(line);
-                        }
+                        Console.WriteLine(person.ToString());
                     }
                 }
-                sr.Dispose();
-                sr.Close();
             }
 
         }
@@ -193,6 +185,9 @@ namespace Zadanie1
             nazw = Regex.Replace(nazw, @"\s", "_");
             int ostatniaLinia = File.ReadAllLines(file).Length;
             StreamWriter sw = new StreamWriter(file, append: true);
+            List<Person> people = allPeople.ToList();
+            people.Add(new Person(imie, nazw, nrTel, ostatniaLinia + 1));
+            allPeople = people.ToArray();
             sw.WriteLine((ostatniaLinia + 1).ToString() + ". " + imie + " " + nazw + " " + nrTel.ToString());
             sw.Close();
         }
